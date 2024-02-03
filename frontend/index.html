@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Call Example</title>
+    <link href="./style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        #apiTable {
+            margin: auto;
+        }
+    </style>
+</head>
+
+
+<body>
+    <button class="btn btn-white" type="button" id="canva" data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom"
+        aria-controls="offcanvasBottom"></button>
+
+    <div class="offcanvas offcanvas-bottom" style="height: 80%;" tabindex="-1" id="offcanvasBottom"
+        aria-labelledby="offcanvasBottomLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasBottomLabel">Update user details here!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body large">
+            <form id="createUserForm">
+                <div class="row w-50 m-auto mt-lg-5">
+                    <div class="col-4">
+                        <label for="firstName">ID:</label>
+                        <input type="text" id="id" name="id" required>
+
+                    </div>
+                    <div class="col-4">
+                        <label for="firstName">Work Name:</label>
+                        <input type="text" id="workName" name="workName" required>
+
+                    </div>
+                    <div class="col-4">
+                        <label for="lastName">discription :</label>
+                        <input type="text" id="discription" name="discription" required>
+
+                    </div>
+                    <div class="col-4">
+                        <label for="street">Status:</label>
+                        <input type="text" id="status" name="status" required>
+                    </div>
+                <div class="row mt-lg-5">
+                        <button type="button" class="btn btn-success" onclick="updateUser()">Update User</button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+    <table id="apiTable">
+        <thead>
+            <tr>
+                <th class="bg-body-secondary shadow p-2">ID</th>
+                <th class="bg-body-secondary shadow p-2">workName</th>
+                <th class="bg-body-secondary shadow p-2">Discription</th>
+                <th class="bg-body-secondary shadow p-2">Status</th>
+                <th class="bg-body-secondary shadow p-2">Edit/Delete</th>
+            </tr>
+        </thead>
+        <tbody id="apiData"></tbody>
+    </table>
+
+    <script>
+
+        const trigger_canva = (data) => {
+            localStorage.setItem('token', data)
+            const button_canva = document.getElementById('canva').click()
+        }
+
+        function updateUser(data) {
+            const status = document.getElementById('status').value;
+
+            const updateApiUrl = `http://localhost:8080/todo/markStatus/{todoId}/{status}`;
+        
+
+            fetch(updateApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id:id,
+                    work_Name: workNmae,
+                    discription: discription,
+                    status: status
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        console.log(`HTTP error! Status: ${response.status}`);
+                        fetchData();
+                        alert('data updated');
+                        console.log(updated);
+                        trigger_canva();
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    renderTable(data);
+                    alert('data in table');
+                })
+                .catch(error => {
+                    console.error('Error updating data:', error.message);
+                    fetchData();
+                    trigger_canva();
+                });
+        }
+
+        function deleteUser(data) {
+            const corsAnywhereUrl = 'http://localhost:8080/';
+            const bearerToken = "dGVzdEBzdW5iYXNlZGF0YS5jb206VGVzdEAxMjM="
+            const deleteApiUrl = `https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=delete&uuid=${data}`;
+            const proxyDeleteApiUrl = `${corsAnywhereUrl}${deleteApiUrl}`;
+
+            fetch(proxyDeleteApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        console.log(`HTTP error! Status: ${response.status}`);
+                        fetchData()
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    renderTable(data);
+                })
+                .catch(error => {
+                    console.error('Error deleting data:', error.message);
+                    fetchData()
+                });
+        }
+        function fetchData() {
+            const apiUrl = 'http://localhost:8080/todos';
+            fetch(corsAnywhereUrl + apiUrl, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    renderTable(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error.message);
+                });
+        }
+
+
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('apiData');
+            tableBody.innerHTML = '';
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.work_name}</td>
+                    <td>${item.discription}</td>
+                    <td>${item.status}</td>
+                    <td> <button class='btn btn-success' onclick='trigger_canva("${item.uuid}")'>
+        <i class="bi bi-pen-fill"></i>
+    </button>
+    <button onclick='deleteUser("${item.uuid}")' class='btn btn-danger'>
+        <i class="bi bi-trash3-fill"></i>
+    </button>
+</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        fetchData();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+        integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
