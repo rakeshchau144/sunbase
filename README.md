@@ -10,7 +10,7 @@ After pulling, open the frontend code in Visual Studio Code.
 Similarly, open the backend code in IntelliJ IDEA.
 
 ## Step 4: Create Database in MySQL
-Create a database named "tododb" in MySQL.
+Create a database named "customer" in MySQL.
 
 ## Step 5: Set Up and Run
 After completing the above steps, set up any necessary configurations and directly run the project in IntelliJ.
